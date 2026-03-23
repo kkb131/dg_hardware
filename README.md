@@ -1,4 +1,8 @@
-# delto_hardware ROS 2 Package 🚀
+# delto_hardware ROS 2 Package
+
+[![CI](https://github.com/tesollodelto/dg_hardware/actions/workflows/ci.yml/badge.svg)](https://github.com/tesollodelto/dg_hardware/actions/workflows/ci.yml)
+![ROS 2 Humble](https://img.shields.io/badge/ROS_2-Humble-blue?logo=ros)
+![ROS 2 Jazzy](https://img.shields.io/badge/ROS_2-Jazzy-blue?logo=ros)
 
 ## 📌 Overview
 
