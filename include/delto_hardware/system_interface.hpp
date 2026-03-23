@@ -50,11 +50,15 @@
 namespace delto_hardware {
 
 // Model IDs
-constexpr uint16_t MODEL_DG3F_B = 0x3F01;
-constexpr uint16_t MODEL_DG3F_M = 0x3F02;
-constexpr uint16_t MODEL_DG4F   = 0x4F02;
-constexpr uint16_t MODEL_DG5F_L = 0x5F12;
-constexpr uint16_t MODEL_DG5F_R = 0x5F22;
+constexpr uint16_t MODEL_DG3F_B    = 0x3F01;
+constexpr uint16_t MODEL_DG3F_M    = 0x3F02;
+constexpr uint16_t MODEL_DG4F      = 0x4F02;
+constexpr uint16_t MODEL_DG5F_L    = 0x5F12;
+constexpr uint16_t MODEL_DG5F_R    = 0x5F22;
+constexpr uint16_t MODEL_DG5F_S_L  = 0x5F14;
+constexpr uint16_t MODEL_DG5F_S_R  = 0x5F24;
+constexpr uint16_t MODEL_DG5F_S15_L = 0x5F34;
+constexpr uint16_t MODEL_DG5F_S15_R = 0x5F44;
 
 // Custom hardware interface type for temperature
 namespace delto_interface {

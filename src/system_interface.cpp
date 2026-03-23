@@ -294,6 +294,62 @@ void SystemInterface::initModelSpecificSettings() {
       }
       break;
 
+    case MODEL_DG5F_S_L:
+      num_fingers_ = 5;
+      num_joints_ = 20;
+      supports_ft_sensor_ = true;
+      supports_gpio_ = true;
+      min_firmware_major_ = 0;
+      min_firmware_minor_ = 0;
+      hand_type_ = "left";
+      for (size_t i = 0; i < motor_dir_.size(); ++i) {
+        motor_dir_[i] = 1;
+      }
+      firmware_dir_revised_ = true;
+      break;
+
+    case MODEL_DG5F_S_R:
+      num_fingers_ = 5;
+      num_joints_ = 20;
+      supports_ft_sensor_ = true;
+      supports_gpio_ = true;
+      min_firmware_major_ = 0;
+      min_firmware_minor_ = 0;
+      hand_type_ = "right";
+      for (size_t i = 0; i < motor_dir_.size(); ++i) {
+        motor_dir_[i] = 1;
+      }
+      firmware_dir_revised_ = true;
+      break;
+
+    case MODEL_DG5F_S15_L:
+      num_fingers_ = 5;
+      num_joints_ = 15;
+      supports_ft_sensor_ = true;
+      supports_gpio_ = true;
+      min_firmware_major_ = 0;
+      min_firmware_minor_ = 0;
+      hand_type_ = "left";
+      for (size_t i = 0; i < motor_dir_.size(); ++i) {
+        motor_dir_[i] = 1;
+      }
+      firmware_dir_revised_ = true;
+      break;
+
+    case MODEL_DG5F_S15_R:
+      num_fingers_ = 5;
+      num_joints_ = 15;
+      supports_ft_sensor_ = true;
+      supports_gpio_ = true;
+      min_firmware_major_ = 0;
+      min_firmware_minor_ = 0;
+      hand_type_ = "right";
+      for (size_t i = 0; i < motor_dir_.size(); ++i) {
+        motor_dir_[i] = 1;
+      }
+      firmware_dir_revised_ = true;
+      break;
+
     default:
       RCLCPP_WARN(rclcpp::get_logger("SystemInterface"),
                   "Unknown model 0x%X, using DG5F-L defaults", model_);
@@ -308,8 +364,10 @@ void SystemInterface::initModelSpecificSettings() {
 }
 
 bool SystemInterface::checkFirmwareCompatibility() {
-  // DG4F doesn't need firmware check for motor direction
-  if (model_ == MODEL_DG4F) {
+  // DG4F and DG5F-S models don't need firmware check for motor direction
+  if (model_ == MODEL_DG4F ||
+      model_ == MODEL_DG5F_S_L || model_ == MODEL_DG5F_S_R ||
+      model_ == MODEL_DG5F_S15_L || model_ == MODEL_DG5F_S15_R) {
     firmware_dir_revised_ = true;
     return true;
   }
