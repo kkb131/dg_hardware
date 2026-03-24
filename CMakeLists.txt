@@ -61,6 +61,17 @@ target_link_libraries(${PROJECT_NAME}
 pluginlib_export_plugin_description_file(hardware_interface delto_hardware.xml)
 
 # Install
+# On non-x86_64, the stub is a real target that must also be installed/exported
+if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  install(
+    TARGETS delto_gripper_helper
+    EXPORT export_${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+  )
+endif()
+
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
