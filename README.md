@@ -90,6 +90,48 @@ colcon build --packages-select delto_hardware
 - pluginlib
 - rclcpp
 
+## ⚠️ ARM64 (aarch64) Build Notes
+
+The vendor-provided `libdelto_gripper_helper.so` is **x86_64 only**. On ARM64 platforms (e.g., NVIDIA Jetson AGX Orin), the build system automatically compiles a reverse-engineered stub implementation instead.
+
+### What changes on ARM64
+
+| Item | x86_64 | ARM64 (aarch64) |
+|------|--------|-----------------|
+| `libdelto_gripper_helper.so` | Precompiled vendor binary (`lib/`) | Built from `src/delto_gripper_helper_stub.cpp` |
+| `CMakeLists.txt` | `SHARED IMPORTED` from `lib/` | `add_library(SHARED ...)` from source |
+| Install/Export | Not exported (IMPORTED target) | Installed and exported alongside `delto_hardware` |
+
+### How it works
+
+`CMakeLists.txt` detects `CMAKE_SYSTEM_PROCESSOR` at build time:
+- **x86_64**: Links the precompiled `lib/libdelto_gripper_helper.so`
+- **Otherwise** (aarch64, etc.): Compiles `src/delto_gripper_helper_stub.cpp` as a shared library
+
+### Stub implementation details
+
+The stub (`src/delto_gripper_helper_stub.cpp`) was reverse-engineered from the x86_64 binary by extracting constants from the `.rodata` section and reconstructing the control formulas:
+
+| Function | Formula | Source |
+|----------|---------|--------|
+| `GetLibraryVersion()` | Returns `0.1` | Constant at 0x6030 |
+| `ConvertDuty()` | `duty = clamp(torque * 12.065 / 12.0 * 100.0, -100, 100)` | Constants at 0x60e8, 0x60f0, 0x60f8 |
+| `CurrentControl()` | Hysteresis current limiting: flag ON at \|I\| > 170 mA, OFF at \|I\| <= 129 mA | Thresholds 0xAA, 0x81 |
+| `ConvertEffort()` | `effort = current / 13.875 * 1.15` | Constants at 0x6008, 0x6010 |
+
+### Limitations
+
+- The stub formulas are approximations from disassembly; edge-case behavior may differ from the vendor binary.
+- For production use on ARM64, request the official aarch64 binary from TESOLLO: [support@tesollo.com](mailto:support@tesollo.com)
+- If an official ARM64 binary is obtained, place it at `lib/libdelto_gripper_helper.so` and update `CMakeLists.txt` to detect `aarch64` as a known architecture.
+
+### Build verification on ARM64
+
+```bash
+colcon build --symlink-install --packages-select delto_hardware
+# Should print: "Building delto_gripper_helper stub for aarch64"
+```
+
 ## 🔌 Usage in URDF/XACRO
 
 ```xml
