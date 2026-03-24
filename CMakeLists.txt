@@ -17,11 +17,21 @@ find_package(std_srvs REQUIRED)
 find_package(delto_tcp_comm REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 
-# Import delto_gripper_helper library (shared across all drivers)
-add_library(delto_gripper_helper SHARED IMPORTED)
-set_target_properties(delto_gripper_helper PROPERTIES
-  IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libdelto_gripper_helper.so
-)
+# delto_gripper_helper: use precompiled .so on x86_64, build stub on arm64
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  add_library(delto_gripper_helper SHARED IMPORTED)
+  set_target_properties(delto_gripper_helper PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libdelto_gripper_helper.so
+  )
+else()
+  message(STATUS "Building delto_gripper_helper stub for ${CMAKE_SYSTEM_PROCESSOR}")
+  add_library(delto_gripper_helper SHARED
+    src/delto_gripper_helper_stub.cpp
+  )
+  target_include_directories(delto_gripper_helper PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+endif()
 
 # Build the hardware interface library
 add_library(${PROJECT_NAME} SHARED
