@@ -61,22 +61,15 @@ std::vector<double> CurrentControl(
             current_integral[i] = 0.0;
         }
 
-        // Rate limiter: clamp the per-cycle change in effort output.
-        // This prevents oscillation from sudden effort spikes while
-        // allowing the output to fully reach the target at steady state.
-        // MAX_DELTA controls max change per cycle (at ~100-300Hz loop rate).
-        static constexpr double MAX_DELTA = 0.3;
-
+        // Passthrough: deliver target_torque directly to preserve P gain effect.
+        // Only the hysteresis current limiter (above) restricts output.
+        // This matches the vendor binary behavior: full effort delivery
+        // with protection only when actual motor current exceeds limits.
+        // If oscillation occurs, add D gain in the controller yaml, not here.
         if (current_limit_flag[i] == 0) {
-            double delta = target_torque[i] - current_integral[i];
-            delta = std::clamp(delta, -MAX_DELTA, MAX_DELTA);
-            current_integral[i] += delta;
-            output[i] = current_integral[i];
+            output[i] = target_torque[i];
         } else {
-            // Over-current: ramp down toward zero
-            double decay = std::clamp(-current_integral[i], -MAX_DELTA, MAX_DELTA);
-            current_integral[i] += decay;
-            output[i] = current_integral[i];
+            output[i] = 0.0;
         }
     }
 
