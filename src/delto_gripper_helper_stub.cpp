@@ -61,11 +61,20 @@ std::vector<double> CurrentControl(
             current_integral[i] = 0.0;
         }
 
-        // Output target torque (passthrough when not current-limited)
+        // Rate-limited output via integral tracking (provides damping).
+        // The vendor binary uses integral accumulation to smooth effort commands,
+        // preventing oscillation from sudden effort changes.
+        // alpha controls smoothing: 0.1 = heavy smoothing, 1.0 = no smoothing.
+        static constexpr double ALPHA = 0.15;
+
         if (current_limit_flag[i] == 0) {
-            output[i] = target_torque[i];
+            // Exponential filter: integral tracks target with rate limiting
+            current_integral[i] += ALPHA * (target_torque[i] - current_integral[i]);
+            output[i] = current_integral[i];
         } else {
-            output[i] = 0.0;  // Stop output when current-limited
+            // Over-current: decay output toward zero
+            current_integral[i] *= 0.9;
+            output[i] = current_integral[i];
         }
     }
 
