@@ -61,19 +61,21 @@ std::vector<double> CurrentControl(
             current_integral[i] = 0.0;
         }
 
-        // Rate-limited output via integral tracking (provides damping).
-        // The vendor binary uses integral accumulation to smooth effort commands,
-        // preventing oscillation from sudden effort changes.
-        // alpha controls smoothing: 0.1 = heavy smoothing, 1.0 = no smoothing.
-        static constexpr double ALPHA = 0.15;
+        // Rate limiter: clamp the per-cycle change in effort output.
+        // This prevents oscillation from sudden effort spikes while
+        // allowing the output to fully reach the target at steady state.
+        // MAX_DELTA controls max change per cycle (at ~100-300Hz loop rate).
+        static constexpr double MAX_DELTA = 0.3;
 
         if (current_limit_flag[i] == 0) {
-            // Exponential filter: integral tracks target with rate limiting
-            current_integral[i] += ALPHA * (target_torque[i] - current_integral[i]);
+            double delta = target_torque[i] - current_integral[i];
+            delta = std::clamp(delta, -MAX_DELTA, MAX_DELTA);
+            current_integral[i] += delta;
             output[i] = current_integral[i];
         } else {
-            // Over-current: decay output toward zero
-            current_integral[i] *= 0.9;
+            // Over-current: ramp down toward zero
+            double decay = std::clamp(-current_integral[i], -MAX_DELTA, MAX_DELTA);
+            current_integral[i] += decay;
             output[i] = current_integral[i];
         }
     }
